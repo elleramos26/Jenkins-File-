@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    environment { label 'gs580s-gbuild01' }
+		GMSEC_API_HOME = "/home/gsfc-580-gmsec/gmsec/GMSEC_API_GSS"
+		LD_LIBRARY_PATH = "/home/gsfc-580-gmsec/gmsec/GMSEC_API_GSS/bin:$LD_LIBRARY_PATH"
+    		PATH = "$GMSEC_API_HOME/bin:$PATH" 
+		}
+    stages {
+        stage ('Checkout') {
+		steps {
+			checkout([
+				$class: 'GitSCM', 
+				branches: [[name: '*/master']], 
+				doGenerateSubmoduleConfigurations: false, 
+				extensions: [[$class: 'CleanCheckout']], 
+				submoduleCfg: [], 
+				userRemoteConfigs: [[credentialsId: 'Jenkins-Gitlab', url: 'git@aetd-git.gsfc.nasa.gov:GMSEC/gmsec-robot.git']]
+			])
+
+		}
+	}
+	stage('Build') {
+		steps {
+                	sh "${env.WORKSPACE}/gradlew compilejava"
+			}
+        }
+        /*stage('Test'){
+		steps {
+                	sh './gradlew check'
+                	junit '**/build/test-results/test/*.xml'
+            	}
+        }*/
+        /*stage('Deploy'){
+		steps {
+                	sh 'make publish'
+           	 }
+        }*/
+    }
+}
